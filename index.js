@@ -6,13 +6,14 @@ var App = require('node-app'),
 		pathToRegexp = require('path-to-regexp');
 
 
+
 ////var Logger = require('node-express-logger'),
 //var Authorization = require('node-express-authorization');
 	////Authentication = require('node-express-authentication');
 
-var debug = require('debug')('app-couchdb-client');
-var debug_events = require('debug')('app-couchdb-client:Events');
-var debug_internals = require('debug')('app-couchdb-client:Internals');
+var debug = require('debug')('app-rethinkdb-client');
+var debug_events = require('debug')('app-rethinkdb-client:Events');
+var debug_internals = require('debug')('app-rethinkdb-client:Internals');
 
 
 var AppCouchDBClient = new Class({
@@ -27,65 +28,68 @@ var AppCouchDBClient = new Class({
 
   api: {},
 
+	r = require('rethinkdb'),
+
   methods: [
-		//server api
-		'request', // -> https://github.com/apache/couchdb-nano#nanorequestopts-callback
-		'config', // -> https://github.com/apache/couchdb-nano#nanoconfig
-		'updates',
-		'followUpdates',
-		'uuids',
-
-		//db api
-		'create',
-		'get',
-		'destroy', // 2 params -> https://github.com/apache/couchdb-nano#nanodbdestroyname-callback
-		'list',
-		'compact',
-		'replicate',
-		'changes',
-		'follow',
-		'info',
-		/**
-		* 'use',
-		* 'scope',
-		**/
-
-		//db.replication api
-		'enable',
-		'query',
-		'disable',
-
-		//db doc api
-		'insert',
-		'destroy', // 3 params -> https://github.com/apache/couchdb-nano#dbdestroydocname-rev-callback
-		'get', // 3 params -> https://github.com/apache/couchdb-nano#dbgetdocname-params-callback
-		'head',
-		'copy',
-		'bulk',
-		'list', // 2 params -> https://github.com/apache/couchdb-nano#dblistparams-callback
-		'fecth',
-		'fetchRevs',
-		'createIndex',
-
-		/**
-		* - db.multipart api
-		* 'insert',
-		* 'get',
-		**/
-
-		/**
-		* - db.attachment api
-		* 'insert',
-		* 'get',
-		* 'destroy',
-		**/
-
-		// db.view api
-		'view',
-		'viewWithList',
-		'show',
-		'atomic',
-		'search',
+		'connect',
+		// //server api
+		// 'request', // -> https://github.com/apache/rethinkdb-nano#nanorequestopts-callback
+		// 'config', // -> https://github.com/apache/rethinkdb-nano#nanoconfig
+		// 'updates',
+		// 'followUpdates',
+		// 'uuids',
+    //
+		// //db api
+		// 'create',
+		// 'get',
+		// 'destroy', // 2 params -> https://github.com/apache/rethinkdb-nano#nanodbdestroyname-callback
+		// 'list',
+		// 'compact',
+		// 'replicate',
+		// 'changes',
+		// 'follow',
+		// 'info',
+		// /**
+		// * 'use',
+		// * 'scope',
+		// **/
+    //
+		// //db.replication api
+		// 'enable',
+		// 'query',
+		// 'disable',
+    //
+		// //db doc api
+		// 'insert',
+		// 'destroy', // 3 params -> https://github.com/apache/rethinkdb-nano#dbdestroydocname-rev-callback
+		// 'get', // 3 params -> https://github.com/apache/rethinkdb-nano#dbgetdocname-params-callback
+		// 'head',
+		// 'copy',
+		// 'bulk',
+		// 'list', // 2 params -> https://github.com/apache/rethinkdb-nano#dblistparams-callback
+		// 'fecth',
+		// 'fetchRevs',
+		// 'createIndex',
+    //
+		// /**
+		// * - db.multipart api
+		// * 'insert',
+		// * 'get',
+		// **/
+    //
+		// /**
+		// * - db.attachment api
+		// * 'insert',
+		// * 'get',
+		// * 'destroy',
+		// **/
+    //
+		// // db.view api
+		// 'view',
+		// 'viewWithList',
+		// 'show',
+		// 'atomic',
+		// 'search',
 	],
 
   authorization:null,
@@ -94,12 +98,12 @@ var AppCouchDBClient = new Class({
 
   options: {
 
-		scheme: 'http',
+		// scheme: 'http',
 		host: '127.0.0.1',
-		port: 5984,
+		port: 28015,
 		db: '',
 
-		couchdb: {
+		rethinkdb: {
 
 		},
 
@@ -201,6 +205,10 @@ var AppCouchDBClient = new Class({
 			},*/
 		},
   },
+	connect(){
+		debug_events('connect %o', arguments)
+		
+	},
   initialize: function(options){
 
 		this.parent(options);//override default options
@@ -237,14 +245,25 @@ var AppCouchDBClient = new Class({
 		//}
 
 		//debug('initialize options %o', this.options);
-		// this.request = new(cradle.Connection)(this.options.host, this.options.port, this.options.couchdb);
-		let opts = {
-			url: this.options.scheme + '://'+ this.options.host + ':' + this.options.port
-		};
+		// this.request = new(cradle.Connection)(this.options.host, this.options.port, this.options.rethinkdb);
+		// let opts = {
+		// 	url: this.options.scheme + '://'+ this.options.host + ':' + this.options.port
+		// };
 
 
-		this.conn = require('nano')(Object.merge(opts, this.options.couchdb));
-
+		// this.conn = require('nano')(Object.merge(opts, this.options.rethinkdb));
+		// this.conn = r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
+		//   if(err) throw err;
+		//   r.db('test').tableCreate('tv_shows').run(conn, function(err, res) {
+		//     if(err) throw err;
+		//     console.log(res);
+		//     r.table('tv_shows').insert({ name: 'Star Trek TNG' }).run(conn, function(err, res)
+		//     {
+		//       if(err) throw err;
+		//       console.log(res);
+		//     });
+		//   });
+		// });
 
 		//if(this.options.db)
 			//this.conn = this.conn.use(this.options.db);

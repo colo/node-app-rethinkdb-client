@@ -1,12 +1,12 @@
 'use strict'
 
-	
+
 module.exports = function(App){
 	App = require('node-app/load')(App)
-	
-	var AppCouchDBClient = new Class({
+
+	var AppRethinkDBClient = new Class({
 		Extends: App,
-		
+
 		load: function(wrk_dir, options){
 			options = options || {};
 
@@ -15,10 +15,10 @@ module.exports = function(App){
 				options.url = options.url || this.options.url;
 				options.port = options.port || this.options.port;
 				options.authentication = options.authentication || this.options.authentication;
-				options.jar = options.jar || this.options.jar;
-				options.gzip = options.gzip || this.options.gzip;
+				// options.jar = options.jar || this.options.jar;
+				// options.gzip = options.gzip || this.options.gzip;
 
-				options.couchdb = options.couchdb || this.options.couchdb;
+				options.rethinkdb = options.rethinkdb || this.options.rethinkdb;
 				options.host = options.host || this.options.host;
 				options.port = options.port || this.options.port;
 				options.db = options.db || this.options.db;
@@ -45,7 +45,7 @@ module.exports = function(App){
 
 		}
 	})
-	
 
-	return AppCouchDBClient
+
+	return AppRethinkDBClient
 }
