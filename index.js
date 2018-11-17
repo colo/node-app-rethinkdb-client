@@ -28,7 +28,7 @@ var AppCouchDBClient = new Class({
 
   api: {},
 
-	r = require('rethinkdb'),
+	r: require('rethinkdb'),
 
   methods: [
 		'connect',
@@ -207,7 +207,7 @@ var AppCouchDBClient = new Class({
   },
 	connect(){
 		debug_events('connect %o', arguments)
-		
+
 	},
   initialize: function(options){
 
