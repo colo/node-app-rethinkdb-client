@@ -122,29 +122,29 @@ var AppCouchDBClient = new Class({
 		authorization: null,
 
 
-		/*routes: {
+		routes: {
 
-			get: [
-				{
-					path: '/:param',
-					callbacks: ['check_authentication', 'get'],
-					content_type: /text\/plain/,
-				},
-			],
-			post: [
+			// get: [
+			// 	{
+			// 		path: '/:param',
+			// 		callbacks: ['check_authentication', 'get'],
+			// 		content_type: /text\/plain/,
+			// 	},
+			// ],
+			connect: [
 				{
 				path: '',
-				callbacks: ['', 'post']
+				callbacks: ['connect']
 				},
 			],
-			all: [
-				{
-				path: '',
-				callbacks: ['', 'get']
-				},
-			]
+			// all: [
+			// 	{
+			// 	path: '',
+			// 	callbacks: ['', 'get']
+			// 	},
+			// ]
 
-		},*/
+		},
 
 		api: {
 

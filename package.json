@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/colo/node-app-rethinkdb-client#readme",
   "dependencies": {
+    "debug": "^4.1.0",
     "node-app": "git+https://github.com/colo/node-app.git",
     "path-to-regexp": "^2.1.0",
     "rethinkdb": "^2.3.3"
