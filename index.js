@@ -1,9 +1,12 @@
 'use strict'
 
-var App = require('node-app'),
+let App = require('node-app'),
 		path = require('path'),
 		fs = require('fs'),
 		pathToRegexp = require('path-to-regexp');
+
+const camelCase = require('camelcase');
+		// r = require('rethinkdb');
 
 
 
@@ -28,68 +31,47 @@ var AppCouchDBClient = new Class({
 
   api: {},
 
-	r: require('rethinkdb'),
 
-  methods: [
-		'connect',
-		// //server api
-		// 'request', // -> https://github.com/apache/rethinkdb-nano#nanorequestopts-callback
-		// 'config', // -> https://github.com/apache/rethinkdb-nano#nanoconfig
-		// 'updates',
-		// 'followUpdates',
-		// 'uuids',
-    //
-		// //db api
-		// 'create',
-		// 'get',
-		// 'destroy', // 2 params -> https://github.com/apache/rethinkdb-nano#nanodbdestroyname-callback
-		// 'list',
-		// 'compact',
-		// 'replicate',
-		// 'changes',
-		// 'follow',
-		// 'info',
-		// /**
-		// * 'use',
-		// * 'scope',
-		// **/
-    //
-		// //db.replication api
-		// 'enable',
-		// 'query',
-		// 'disable',
-    //
-		// //db doc api
-		// 'insert',
-		// 'destroy', // 3 params -> https://github.com/apache/rethinkdb-nano#dbdestroydocname-rev-callback
-		// 'get', // 3 params -> https://github.com/apache/rethinkdb-nano#dbgetdocname-params-callback
-		// 'head',
-		// 'copy',
-		// 'bulk',
-		// 'list', // 2 params -> https://github.com/apache/rethinkdb-nano#dblistparams-callback
-		// 'fecth',
-		// 'fetchRevs',
-		// 'createIndex',
-    //
-		// /**
-		// * - db.multipart api
-		// * 'insert',
-		// * 'get',
-		// **/
-    //
-		// /**
-		// * - db.attachment api
-		// * 'insert',
-		// * 'get',
-		// * 'destroy',
-		// **/
-    //
-		// // db.view api
-		// 'view',
-		// 'viewWithList',
-		// 'show',
-		// 'atomic',
-		// 'search',
+	methods: [
+		/**
+		* access
+		**/
+		'close',
+		'reconnect',
+		'use',
+		'run', //test
+		'changes', //test
+		'noreplyWait',
+		'server',
+
+		/**
+		* dbs
+		**/
+		'dbCreate',
+		'dbDrop',
+		'dbList',
+
+		/**
+		* tables
+		**/
+		'tableCreate',
+		'tableDrop',
+		'tableList',
+		'indexCreate',
+		'indexDrop',
+		'indexList',
+		'indexRename',
+		'indexStatus',
+		'indexWait',
+
+		/**
+		* data
+		*/
+		'insert',
+		'update',
+		'replace',
+		'delete',
+		'sync',
 	],
 
   authorization:null,
@@ -101,10 +83,19 @@ var AppCouchDBClient = new Class({
 		// scheme: 'http',
 		host: '127.0.0.1',
 		port: 28015,
-		db: '',
+		db: undefined,
 
 		rethinkdb: {
-
+			// 'user': undefined, //the user account to connect as (default admin).
+			// 'password': undefined, // the password for the user account to connect as (default '', empty).
+			// 'timeout': undefined, //timeout period in seconds for the connection to be opened (default 20).
+			// /**
+			// *  a hash of options to support SSL connections (default null).
+			// * Currently, there is only one option available,
+			// * and if the ssl option is specified, this key is required:
+			// * ca: a list of Node.js Buffer objects containing SSL CA certificates.
+			// **/
+			// 'ssl': undefined,
 		},
 
 		logs: null,
@@ -122,29 +113,29 @@ var AppCouchDBClient = new Class({
 		authorization: null,
 
 
-		routes: {
-
-			// get: [
-			// 	{
-			// 		path: '/:param',
-			// 		callbacks: ['check_authentication', 'get'],
-			// 		content_type: /text\/plain/,
-			// 	},
-			// ],
-			connect: [
-				{
-				path: '',
-				callbacks: ['connect']
-				},
-			],
-			// all: [
-			// 	{
-			// 	path: '',
-			// 	callbacks: ['', 'get']
-			// 	},
-			// ]
-
-		},
+		// routes: {
+    //
+		// 	// get: [
+		// 	// 	{
+		// 	// 		path: '/:param',
+		// 	// 		callbacks: ['check_authentication', 'get'],
+		// 	// 		content_type: /text\/plain/,
+		// 	// 	},
+		// 	// ],
+		// 	connect: [
+		// 		{
+		// 		path: '',
+		// 		callbacks: ['connect']
+		// 		},
+		// 	],
+		// 	// all: [
+		// 	// 	{
+		// 	// 	path: '',
+		// 	// 	callbacks: ['', 'get']
+		// 	// 	},
+		// 	// ]
+    //
+		// },
 
 		api: {
 
@@ -205,77 +196,38 @@ var AppCouchDBClient = new Class({
 			},*/
 		},
   },
-	connect(){
-		debug_events('connect %o', arguments)
-
+	connect(err, conn){
+		debug_events('connect %o', err, conn)
+		if(err){
+			this.fireEvent(this.ON_CONNECT_ERROR, { host: this.options.host, port: this.options.port, db: this.options.db, error: err });
+			throw err
+		}
+		else {
+			this.conn = conn
+			this.fireEvent(this.ON_CONNECT, { host: this.options.host, port: this.options.port, db: this.options.db });
+		}
 	},
-  initialize: function(options){
+  initialize: function(options, connect_cb){
 
 		this.parent(options);//override default options
 
-		/**
-		 * cradle
-		 *  - start
-		 * **/
-		//if(this.options.cradle){
-		//////console.log('---this.options.cradle----');
-		//////console.log(this.options.cradle);
 
-
-			//if(typeof(this.options.cradle) == 'class'){
-				//var tmp_class = this.options.cradle;
-				//this.request = new tmp_class(this, {});
-				//this.options.cradle = {};
-			//}
-			//else if(typeof(this.options.cradle) == 'function'){
-				//this.request = this.options.cradle;
-				//this.options.cradle = {};
-			//}
-			////else if(this.options.logs.instance){//winston
-				////this.logger = this.options.logs;
-				////this.options.logs = {};
-			////}
-			//else{
-				//this.request = new(cradle.Connection)(this.options.host, this.options.port, this.options.cradle);
-				////app.use(this.logger.access());
-			//}
-
-			////app.use(this.logger.access());
-
-		//}
-
-		//debug('initialize options %o', this.options);
-		// this.request = new(cradle.Connection)(this.options.host, this.options.port, this.options.rethinkdb);
-		// let opts = {
-		// 	url: this.options.scheme + '://'+ this.options.host + ':' + this.options.port
-		// };
+		let opts = {
+			host: this.options.host,
+			port: this.options.port,
+			db: this.options.db
+		};
 
 
 		// this.conn = require('nano')(Object.merge(opts, this.options.rethinkdb));
-		// this.conn = r.connect({ host: 'localhost', port: 28015 }, function(err, conn) {
-		//   if(err) throw err;
-		//   r.db('test').tableCreate('tv_shows').run(conn, function(err, res) {
-		//     if(err) throw err;
-		//     console.log(res);
-		//     r.table('tv_shows').insert({ name: 'Star Trek TNG' }).run(conn, function(err, res)
-		//     {
-		//       if(err) throw err;
-		//       console.log(res);
-		//     });
-		//   });
-		// });
+		connect_cb = (typeOf(connect_cb) ==  "function") ? connect_cb.bind(this) : this.connect.bind(this)
+
+		this.r = require('rethinkdb')
+
+		this.r.connect(Object.merge(opts, this.options.rethinkdb), connect_cb)
 
 		//if(this.options.db)
 			//this.conn = this.conn.use(this.options.db);
-
-		//console.log(this.conn);
-
-		/**
-		 * cradle
-		 *  - end
-		 * **/
-
-
 
 		//if(this.options.db);
 			//this.request.database(this.options.db);
@@ -360,7 +312,7 @@ var AppCouchDBClient = new Class({
 		//}
 
 
-		var instance = this;
+		let instance = this;
 		//var conn = this.request;
 
 		//var api = this.options.api;
@@ -382,54 +334,13 @@ var AppCouchDBClient = new Class({
 			 * @callback_alt if typeof function, gets executed instead of the method asigned to the matched route (is an alternative callback, instead of the default usage)
 			 * */
 			instance[verb] = function(verb, original_func, options, callback_alt){
-				//debug_internals('instance[verb] %o', arguments);
+				// debug_internals('instance[verb] %o', arguments);
 
-				////console.log('---gets called??---')
-				////console.log(arguments);
-
-				//var request;//the request object to return
-
-				var path = '';
-				//if(is_api){
-					//path = ((typeof(api.path) !== "undefined") ? this.options.path+api.path : this.options.path).replace('//', '/');
-				//}
-				//else{
-					path = (typeof(this.options.path) !== "undefined") ? this.options.path : '';
-				//}
-
+				let path = (typeof(this.options.path) !== "undefined") ? this.options.path : '';
 
 				options = options || {};
 
 				debug_internals('instance[verb] routes %o', routes);
-
-				//if(options.auth === false || options.auth === null){
-					//delete options.auth;
-				//}
-				//else if(!options.auth &&
-					//this.options.authentication &&
-					//(this.options.authentication.user || this.options.authentication.username) &&
-					//(this.options.authentication.pass || this.options.authentication.password))
-				//{
-					//options.auth = this.options.authentication;
-				//}
-
-				//var content_type = '';
-				//var version = '';
-
-				//if(is_api){
-					//content_type = (typeof(api.content_type) !== "undefined") ? api.content_type : '';
-					//version = (typeof(api.version) !== "undefined") ? api.version : '';
-				//}
-				//else{
-					//content_type = (typeof(this.options.content_type) !== "undefined") ? this.options.content_type : '';
-				//}
-
-				//var gzip = this.options.gzip || false;
-
-				////console.log('---ROUTES---');
-				////console.log(routes);
-
-				debug_internals('routes %o', routes);
 				debug_internals('verb %s', verb);
 				debug_internals('routes[verb] %o', routes[verb]);
 
@@ -439,28 +350,30 @@ var AppCouchDBClient = new Class({
 					Array.each(routes[verb], function(route){
 						debug_internals('instance[verb] route.path %s', route.path);
 
-						////console.log('---ROUTE PATH---');
-						//////console.log(route.path);
-
-						//content_type = (typeof(route.content_type) !== "undefined") ? route.content_type : content_type;
-						//gzip = route.gzip || false;
-
 						route.path = route.path || '';
 						options.uri = options.uri || '';
 
 						var keys = []
 						var re = pathToRegexp(route.path, keys);
 
-						////console.log('route path: '+route.path);
-						////console.log(re.exec(options.uri));
-						////console.log('options.uri: '+options.uri);
-						////console.log(path);
-						////console.log(keys);
-						////console.log('--------');
-
-
-
 						if(options.uri != null && re.test(options.uri) == true){
+							// let _path = pathToRegexp.compile(route.path);
+							// if(options.uri != null){
+							// 	console.log(options.uri)
+							// 	try{
+							// 	console.log(_path(options.uri))
+							// 	}
+							// 	catch(e){}
+              //
+							// }
+							// console.log(re.exec(options.uri))
+							options.params = {}
+							let _params = re.exec(options.uri)
+							Array.each(keys, function(val, index){
+								options.params[val.name] =_params[index + 1]
+							})
+							// console.log(options.params)
+
 							uri_matched = true;
 
 							var callbacks = [];
@@ -483,106 +396,49 @@ var AppCouchDBClient = new Class({
 								}.bind(this));
 							}
 
-							//if(is_api){
-								////var versioned_path = '';
-								//if(api.versioned_path === true && version != ''){
-									//path = path + '/v'+semver.major(version);
-									////path += (typeof(route.path) !== "undefined") ? '/' + route.path : '';
-								//}
-								//else{
-									////path += (typeof(route.path) !== "undefined") ? '/' + route.path : '';
-								//}
-							//}
-
-							////if(!is_api){
-								//path += '/'+options.uri;
-							////}
-
-							//path = path.replace('//', '/');
-
-							//if(path == '/')
-								//path = '';
-
-
-
-							////////console.log(path+options.uri);
-							////////console.log('PATH');
-							////////console.log(options.uri);
-							////////console.log(options.uri);
-
 							var merged = {};
-							//Object.merge(
-								//merged,
-								//options,
-								//{ headers: this.options.headers },
-								//{
-									//baseUrl: uri,
-									////uri: path+options.uri,
-									//uri: path,
-									//gzip: gzip,
-									//headers: {
-										//'Content-Type': content_type
-									//},
-									//jar: this.options.jar
-								//}
-							//);
 
-							////console.log('---MERGED----');
-							////console.log(merged);
-							////////console.log(process.env.PROFILING_ENV);
-							////////console.log(this.logger);
-
-							////console.log('---VERB----')
-							//////console.log(this.options.db);
-							////console.log(verb);
-
+							let args = options.args || [];
 
 							let response = function(err, resp){
-								//////console.log('---req_func.cache.has(options.doc)---')
-								//////console.log(resp._id);
-								//////console.log(this.request.database('dashboard').cache.has(resp._id));
+								// if(err && resp == undefined){//some functions return no errs
+								// 	resp = err
+								// 	err = undefined
+								// }
 
-								////console.log('--response callback---');
-								////console.log(arguments);
-								if(resp){
-									let cast_resp = null;
-									if(resp[0]){
-										cast_resp = [];
-
-										////console.log(typeof(cast_resp));
-
-										Array.each(resp, function(value, index){
-											cast_resp.push(value);
-										})
-
-										resp = cast_resp;
-
-										////console.log(resp);
-										////console.log(Array.isArray(cast_resp));
-										//throw new Error('Array');
-									}
-									else{
-										cast_resp = {};
-										Object.each(resp, function(value, key){
-											cast_resp[key] = value;
-										})
-
-										resp = cast_resp;
-
-										////console.log(resp);
-										//throw new Error('Object');
-									}
-								}
+								// if(resp){
+								// 	let cast_resp = null;
+								// 	if(resp[0]){
+								// 		cast_resp = [];
+                //
+                //
+								// 		Array.each(resp, function(value, index){
+								// 			cast_resp.push(value);
+								// 		})
+                //
+								// 		resp = cast_resp;
+                //
+								// 	}
+								// 	else{
+								// 		cast_resp = {};
+								// 		Object.each(resp, function(value, key){
+								// 			cast_resp[key] = value;
+								// 		})
+                //
+								// 		resp = cast_resp;
+                //
+                //
+								// 	}
+								// }
 
 
 								if(err){
-									//this.fireEvent(this.ON_CONNECT_ERROR, {options: merged, uri: options.uri, route: route.path, error: err });
-									this.fireEvent(this.ON_CONNECT_ERROR, {uri: options.uri, route: route.path, error: err });
+									// this.fireEvent(this.ON_CONNECT_ERROR, {uri: options.uri, route: route.path, error: err });
+									this.fireEvent(camelCase('on_'+verb+'_error'), [args]);
 								}
 								else{
-									//this.fireEvent(this.ON_CONNECT, {options: merged, uri: options.uri, route: route.path, response: resp, body: body });
-									//this.fireEvent(this.ON_CONNECT, {uri: options.uri, route: route.path, response: resp });
-									this.fireEvent(this.ON_CONNECT, {uri: options.uri, route: route.path, response: resp, options: options });
+									// this.fireEvent(this.ON_CONNECT, {uri: options.uri, route: route.path, response: resp, options: options });
+									this.fireEvent(camelCase('on_'+verb), [args]);
 								}
 
 
@@ -616,7 +472,7 @@ var AppCouchDBClient = new Class({
 
 							}.bind(this);
 
-							var args = options.args || [];
+
 
 							// if(options.id)
 							// 	args.push(options.id);
@@ -628,63 +484,139 @@ var AppCouchDBClient = new Class({
 							// 	args.push(options.data);
 
 
-							var req_func = null;
-							var db = keys[0];
-							// var cache = keys[1];
-							// var cache_result;
+							let req_func = instance.conn;
+							let db = keys[0];
 
-
-							if(db){
-								var name = re.exec(options.uri)[1];
-								// req_func = this.request['database'](name);
-								req_func = this.conn.use(name);
-								////console.log('---DB----');
-								////console.log(name);
-								//////console.log(req_func['info'](response));
-							}
-							else{
-								//////console.log(this.request);
-								req_func = this.conn;
-
-							}
-
-							// if(cache){
-							// 	////console.log('---CACHE----');
-							// 	////console.log(options);
-							// 	////console.log(args);
-							// 	//req_func.get(options.doc, function(err, resp){
+							// args.push(response);
               //
-							// 		//////console.log('--cache result---',cache_result);
+							// if(args.length == 0)
+							// 	args = [];
               //
-							// 	//});
-							// 	cache_result = req_func.cache[verb](args);
-              //
-							// 	////console.log('---CACHE RESULT----');
-							// 	////console.log(cache_result);
-              //
-							// 	if(cache_result || cache.optional == false)
-							// 		response(null, cache_result);
-							// }
-              //
-							// if(!cache || (!cache_result && cache.optional)){
+							// if(args.length == 1)
+							// 	args = args[0];
 
-								args.push(response);
 
-								if(args.length == 0)
-									args = null;
+							debug_internals('verb %s %o', verb, args)
+							// //console.log(this.conn.info())
+							let table = (options.params && options.params.table) ? options.params.table : undefined
+							let database = (options.params && options.params.database) ? options.params.database : undefined
 
-								if(args.length == 1)
+							switch (verb) {
+								/**
+								* database
+								*/
+								case 'use':
+									req_func[verb].attempt(args)
+									response()
+									break
+
+								case 'dbCreate':
+								case 'dbDrop':
+									instance.r[verb](options.uri).run(instance.conn, response)
+									break
+
+								case 'dbList'://no args
+									instance.r[verb]().run(instance.conn, response)
+									break
+								/**
+								* database end
+								*/
+
+								/**
+								* table
+								*/
+								case 'tableCreate':
+								case 'tableDrop':
 									args = args[0];
+									if(database != undefined){
+										instance.r.db(options.params.database)[verb](args).run(instance.conn, response)
+									}
+									else{
+										instance.r[verb](args).run(instance.conn, response)
+									}
+									break
+
+								case 'tableList'://no args
+									if(database != undefined){
+										instance.r.db(options.params.database)[verb]().run(instance.conn, response)
+									}
+									else{
+										instance.r[verb]().run(instance.conn, response)
+									}
+									break
+
+								case 'sync':// data method
+								case 'indexList':
+									if(database != undefined){
+										instance.r.db(options.params.database).table(table)[verb]().run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb]().run(instance.conn, response)
+									}
+									break
+
+								case 'indexWait':
+								case 'indexStatus':
+								case 'indexDrop':
+									if(database != undefined){
+										instance.r.db(options.params.database).table(table)[verb](args[0]).run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb](args[0]).run(instance.conn, response)
+									}
+									break
+
+								case 'indexCreate':
+								case 'indexRename':
+									if(database != undefined){
+										instance.r.db(options.params.database).table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
+									}
+									break
+								/**
+								* table end
+								*/
+
+								/**
+								* data
+								*/
+								case 'delete':
+									if(database != undefined){
+										instance.r.db(options.params.database).table(table)[verb]().run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb]().run(instance.conn, response)
+									}
+									break
+
+								case 'insert':
+								case 'update':
+								case 'replace':
+									if(!args[1])
+										args[1] = {}
+
+									if(database != undefined){
+										instance.r.db(options.params.database).table(table)[verb](args[0], args[1]).run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb](args[0], args[1]).run(instance.conn, response)
+									}
+									break
+								/**
+								* data end
+								*/
+								default:
+									args.push(response);
+									req_func[verb].attempt(args, req_func)
+							}
 
 
-								//console.log('verb', verb)
-								// //console.log(this.conn.info())
-
-								req_func[verb].attempt(args, req_func);
 
 
 
-							// }
+
 
 						}
 
