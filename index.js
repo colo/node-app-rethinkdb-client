@@ -72,6 +72,20 @@ var AppCouchDBClient = new Class({
 		'replace',
 		'delete',
 		'sync',
+
+		'get',
+		'getAll',
+		'between',
+		'filter',
+
+		/**
+		* @todo
+		*
+		'innerJoin',
+		'outerJoin',
+		'eqJoin',
+		'zip',
+		**/
 	],
 
   authorization:null,
@@ -495,6 +509,7 @@ var AppCouchDBClient = new Class({
 							// if(args.length == 1)
 							// 	args = args[0];
 
+							// args = args.clean()
 
 							debug_internals('verb %s %o', verb, args)
 							// //console.log(this.conn.info())
@@ -512,7 +527,7 @@ var AppCouchDBClient = new Class({
 
 								case 'dbCreate':
 								case 'dbDrop':
-									instance.r[verb](options.uri).run(instance.conn, response)
+									instance.r[verb](database).run(instance.conn, response)
 									break
 
 								case 'dbList'://no args
@@ -525,48 +540,54 @@ var AppCouchDBClient = new Class({
 								/**
 								* table
 								*/
+								// case 'tableCreate':
+								// case 'tableDrop':
+								// 	// args = args[0];
+								// 	if(database != undefined){
+								// 		instance.r.db(options.params.database)[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	else{
+								// 		instance.r[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	break
 								case 'tableCreate':
 								case 'tableDrop':
-									args = args[0];
-									if(database != undefined){
-										instance.r.db(options.params.database)[verb](args).run(instance.conn, response)
-									}
-									else{
-										instance.r[verb](args).run(instance.conn, response)
-									}
-									break
-
 								case 'tableList'://no args
 									if(database != undefined){
-										instance.r.db(options.params.database)[verb]().run(instance.conn, response)
+										instance.r.db(options.params.database)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									else{
-										instance.r[verb]().run(instance.conn, response)
+										instance.r[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									break
 
+								// case 'sync':// data method
+								// case 'indexList':
+								// 	if(database != undefined){
+								// 		instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	else{
+								// 		instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	break
 								case 'sync':// data method
+								case 'get': //data method
+								case 'getAll': //data method
+								case 'filter': //data method
 								case 'indexList':
-									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb]().run(instance.conn, response)
-									}
-									else{
-										instance.r.table(table)[verb]().run(instance.conn, response)
-									}
-									break
-
 								case 'indexWait':
 								case 'indexStatus':
 								case 'indexDrop':
+								case 'indexCreate':
 									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb](args[0]).run(instance.conn, response)
+										instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									else{
-										instance.r.table(table)[verb](args[0]).run(instance.conn, response)
+										instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									break
 
-								case 'indexCreate':
+								case 'between': //data method
 								case 'indexRename':
 									if(database != undefined){
 										instance.r.db(options.params.database).table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
@@ -582,7 +603,7 @@ var AppCouchDBClient = new Class({
 								/**
 								* data
 								*/
-								case 'delete':
+								case 'delete'://no args
 									if(database != undefined){
 										instance.r.db(options.params.database).table(table)[verb]().run(instance.conn, response)
 									}
@@ -594,14 +615,14 @@ var AppCouchDBClient = new Class({
 								case 'insert':
 								case 'update':
 								case 'replace':
-									if(!args[1])
-										args[1] = {}
+									// if(!args[1])
+									// 	args[1] = {}
 
 									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb](args[0], args[1]).run(instance.conn, response)
+										instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									else{
-										instance.r.table(table)[verb](args[0], args[1]).run(instance.conn, response)
+										instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									break
 								/**
