@@ -595,7 +595,7 @@ var AppCouchDBClient = new Class({
 								case 'tableDrop':
 								case 'tableList'://no args
 									if(database != undefined){
-										instance.r.db(options.params.database)[verb](this.r.args(args)).run(instance.conn, response)
+										instance.r.db(database)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									else{
 										instance.r[verb](this.r.args(args)).run(instance.conn, response)
@@ -625,7 +625,7 @@ var AppCouchDBClient = new Class({
 								case 'indexDrop':
 								case 'indexCreate':
 									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
+										instance.r.db(database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
 									}
 									else{
 										instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
@@ -635,7 +635,7 @@ var AppCouchDBClient = new Class({
 								case 'between': //data method
 								case 'indexRename':
 									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
+										instance.r.db(database).table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
 									}
 									else{
 										instance.r.table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
@@ -650,7 +650,7 @@ var AppCouchDBClient = new Class({
 								*/
 								case 'delete'://no args
 									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb]().run(instance.conn, response)
+										instance.r.db(database).table(table)[verb]().run(instance.conn, response)
 									}
 									else{
 										instance.r.table(table)[verb]().run(instance.conn, response)
@@ -680,7 +680,7 @@ var AppCouchDBClient = new Class({
 									}
 									else if(typeOf(args) == 'function'){
 										if(database != undefined){
-											instance.r.db(options.params.database).table(table)[verb](args).run(instance.conn, response)
+											instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
 										}
 										else{
 											instance.r.table(table)[verb](args).run(instance.conn, response)
@@ -704,10 +704,10 @@ var AppCouchDBClient = new Class({
 								case 'orderBy'://trasnformation
 									if(database != undefined){
 										if(Array.isArray(args)){
-											instance.r.db(options.params.database).table(table)[verb](args[0], args[1]).run(instance.conn, response)
+											instance.r.db(database).table(table)[verb](args[0], args[1]).run(instance.conn, response)
 										}
 										else{
-											instance.r.db(options.params.database).table(table)[verb](args).run(instance.conn, response)
+											instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
 										}
 									}
 									else{
