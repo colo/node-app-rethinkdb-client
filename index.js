@@ -79,12 +79,51 @@ var AppCouchDBClient = new Class({
 		'filter',
 
 		/**
+		* joins
 		* @todo
 		*
 		'innerJoin',
 		'outerJoin',
 		'eqJoin',
 		'zip',
+		**/
+
+		/**
+		* trasnformation
+		*/
+		'map',
+		'withFields',
+		'concatMap',
+		'orderBy',
+		/**
+		* trasnformation
+		* @todo
+		*
+		'skip',
+		'limit',
+		'slice',
+		'nth',
+		'offsetsOf',
+		'isEmpty',
+		'union',
+		'sample',
+		**/
+
+		/**
+		* aggregation
+		* @todo
+		*
+		group
+		ungroup
+		reduce
+		fold
+		count
+		sum
+		avg
+		min
+		max
+		distinct
+		contains
 		**/
 	],
 
@@ -413,6 +452,7 @@ var AppCouchDBClient = new Class({
 							var merged = {};
 
 							let args = options.args || [];
+							let expr = options.expr || undefined;
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -498,8 +538,8 @@ var AppCouchDBClient = new Class({
 							// 	args.push(options.data);
 
 
-							let req_func = instance.conn;
-							let db = keys[0];
+							// let req_func = instance.conn;
+							// let db = keys[0];
 
 							// args.push(response);
               //
@@ -515,13 +555,14 @@ var AppCouchDBClient = new Class({
 							// //console.log(this.conn.info())
 							let table = (options.params && options.params.table) ? options.params.table : undefined
 							let database = (options.params && options.params.database) ? options.params.database : undefined
+							let r_func = undefined
 
 							switch (verb) {
 								/**
 								* database
 								*/
 								case 'use':
-									req_func[verb].attempt(args)
+									instance.conn[verb].attempt(args)
 									response()
 									break
 
@@ -574,6 +615,10 @@ var AppCouchDBClient = new Class({
 								case 'get': //data method
 								case 'getAll': //data method
 								case 'filter': //data method
+								case 'insert'://data method
+								case 'update'://data method
+								case 'replace'://data method
+								case 'withFields'://trasnformation
 								case 'indexList':
 								case 'indexWait':
 								case 'indexStatus':
@@ -612,25 +657,81 @@ var AppCouchDBClient = new Class({
 									}
 									break
 
-								case 'insert':
-								case 'update':
-								case 'replace':
-									// if(!args[1])
-									// 	args[1] = {}
-
-									if(database != undefined){
-										instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
-									}
-									else{
-										instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
-									}
-									break
+								// case 'insert':
+								// case 'update':
+								// case 'replace':
+								// 	// if(!args[1])
+								// 	// 	args[1] = {}
+                //
+								// 	if(database != undefined){
+								// 		instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	else{
+								// 		instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
+								// 	}
+								// 	break
 								/**
 								* data end
 								*/
+								case 'map':
+								case 'concatMap':
+									if(expr){
+										this.r.expr(expr).map(args).run(instance.conn, response)
+									}
+									else if(typeOf(args) == 'function'){
+										if(database != undefined){
+											instance.r.db(options.params.database).table(table)[verb](args).run(instance.conn, response)
+										}
+										else{
+											instance.r.table(table)[verb](args).run(instance.conn, response)
+										}
+
+									}
+									// else {
+									// 	// let _map = args.pop()
+									// 	// console.log(args)
+									// 	if(database != undefined){
+									// 		instance.r.db(options.params.database).table(table)[verb].apply(args).run(instance.conn, response)
+									// 	}
+									// 	else{
+									// 		instance.r.table(table)[verb].apply(args).run(instance.conn, response)
+									// 	}
+                  //
+									// }
+
+									break
+
+								case 'orderBy'://trasnformation
+									if(database != undefined){
+										if(Array.isArray(args)){
+											instance.r.db(options.params.database).table(table)[verb](args[0], args[1]).run(instance.conn, response)
+										}
+										else{
+											instance.r.db(options.params.database).table(table)[verb](args).run(instance.conn, response)
+										}
+									}
+									else{
+										if(Array.isArray(args)){
+											instance.r.table(table)[verb](args[0], args[1]).run(instance.conn, response)
+										}
+										else{
+											instance.r.table(table)[verb](args).run(instance.conn, response)
+										}
+
+									}
+									// console.log(args)
+									// if(Array.isArray(args)){
+									// 	r_func(args[0], args[1]).run(instance.conn, response)
+									// }
+									// else{
+									// 	r_func(args).run(instance.conn, response)
+									// }
+
+									break
+
 								default:
 									args.push(response);
-									req_func[verb].attempt(args, req_func)
+									instance.conn[verb].attempt(args, instance.conn)
 							}
 
 
