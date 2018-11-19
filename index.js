@@ -555,7 +555,8 @@ var AppCouchDBClient = new Class({
 							// //console.log(this.conn.info())
 							let table = (options.params && options.params.table) ? options.params.table : undefined
 							let database = (options.params && options.params.database) ? options.params.database : undefined
-							let r_func = undefined
+							// let r_func = undefined
+							let r = this.r
 
 							switch (verb) {
 								/**
