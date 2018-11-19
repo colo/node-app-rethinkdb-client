@@ -625,15 +625,31 @@ var AppCouchDBClient = new Class({
 								case 'indexWait':
 								case 'indexStatus':
 								case 'indexDrop':
-								case 'indexCreate':
-									if(row)
-										args.push(instance.r.row(row))
-										
 									if(database != undefined){
 										instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
 									}
 									else{
 										instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+									}
+									break
+
+								case 'indexCreate':
+									if(database != undefined){
+										if(row){
+											instance.r.db(database).table(table)[verb](args, row).run(instance.conn, response)
+										}
+										else{
+											instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
+										}
+
+									}
+									else{
+										if(row){
+											instance.r.table(table)[verb](args, row).run(instance.conn, response)
+										}
+										else{
+											instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+										}
 									}
 									break
 
