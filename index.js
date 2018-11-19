@@ -453,6 +453,7 @@ var AppCouchDBClient = new Class({
 
 							let args = options.args || [];
 							let expr = options.expr || undefined;
+							let row = options.row || undefined;
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -625,6 +626,9 @@ var AppCouchDBClient = new Class({
 								case 'indexStatus':
 								case 'indexDrop':
 								case 'indexCreate':
+									if(row)
+										args.push(instance.r.row(row))
+										
 									if(database != undefined){
 										instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
 									}
