@@ -626,10 +626,10 @@ var AppCouchDBClient = new Class({
 								case 'indexDrop':
 								case 'indexCreate':
 									if(database != undefined){
-										instance.r.db(database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
+										instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
 									}
 									else{
-										instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
+										instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
 									}
 									break
 
