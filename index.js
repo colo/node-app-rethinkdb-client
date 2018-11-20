@@ -122,9 +122,9 @@ var AppCouchDBClient = new Class({
 		avg
 		min
 		max
-		distinct
 		contains
 		**/
+		'distinct',
 	],
 
   authorization:null,
@@ -621,6 +621,7 @@ var AppCouchDBClient = new Class({
 								case 'update'://data method
 								case 'replace'://data method
 								case 'withFields'://trasnformation
+								case 'distinct': //aggregation
 								case 'indexList':
 								case 'indexWait':
 								case 'indexStatus':
