@@ -621,7 +621,6 @@ var AppCouchDBClient = new Class({
 								case 'update'://data method
 								case 'replace'://data method
 								case 'withFields'://trasnformation
-								case 'distinct': //aggregation
 								case 'indexList':
 								case 'indexWait':
 								case 'indexStatus':
@@ -750,6 +749,15 @@ var AppCouchDBClient = new Class({
 									// }
 
 									break
+								case 'distinct': //aggregation
+									if(database != undefined){
+										instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb](args).run(instance.conn, response)
+									}
+
+								break
 
 								default:
 									args.push(response);
