@@ -682,7 +682,7 @@ var AppCouchDBClient = new Class({
 								*/
 								case 'delete'://no args
 									if(args)
-										console.log(instance.r.typeOf(args[0]))
+										console.log(args)
 
 									// if(database != undefined){
 									// 	instance.r.db(database).table(table)[verb]().run(instance.conn, response)
