@@ -692,7 +692,7 @@ var AppCouchDBClient = new Class({
 									}
 
 									if(args){
-										r_func = r_func[args[0]][verb](args[1])
+										r_func = args[0][verb](args[1])
 									}
 
 									r_func.run(instance.conn, response)
