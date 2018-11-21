@@ -663,9 +663,9 @@ var AppCouchDBClient = new Class({
 										r_func = instance.r.table(table)[verb](args[0], args[1], args[2])
 									}
 
-									if(field == undefined)
+									if(field != undefined)
 										r_func.getField(field)
-										
+
 									r_func.run(instance.conn, response)
 									break
 								/**
