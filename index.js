@@ -454,6 +454,7 @@ var AppCouchDBClient = new Class({
 							let args = options.args || [];
 							let expr = options.expr || undefined;
 							let row = options.row || undefined;
+							let field = options.field || undefined;
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -556,7 +557,7 @@ var AppCouchDBClient = new Class({
 							// //console.log(this.conn.info())
 							let table = (options.params && options.params.table) ? options.params.table : undefined
 							let database = (options.params && options.params.database) ? options.params.database : undefined
-							// let r_func = undefined
+							let r_func = undefined
 							let r = instance.r
 
 							switch (verb) {
@@ -656,11 +657,16 @@ var AppCouchDBClient = new Class({
 								case 'between': //data method
 								case 'indexRename':
 									if(database != undefined){
-										instance.r.db(database).table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
+										r_func = instance.r.db(database).table(table)[verb](args[0], args[1], args[2])
 									}
 									else{
-										instance.r.table(table)[verb](args[0], args[1], args[2]).run(instance.conn, response)
+										r_func = instance.r.table(table)[verb](args[0], args[1], args[2])
 									}
+
+									if(field == undefined)
+										r_func.getField(field)
+										
+									r_func.run(instance.conn, response)
 									break
 								/**
 								* table end
