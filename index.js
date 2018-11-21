@@ -681,15 +681,24 @@ var AppCouchDBClient = new Class({
 								* data
 								*/
 								case 'delete'://no args
-									if(args)
-										console.log(args)
+									// if(args)
+									// 	console.log(args)
 
-									// if(database != undefined){
-									// 	instance.r.db(database).table(table)[verb]().run(instance.conn, response)
-									// }
-									// else{
-									// 	instance.r.table(table)[verb]().run(instance.conn, response)
-									// }
+									if(database != undefined){
+										r_func = instance.r.db(database).table(table)
+									}
+									else{
+										r_func = instance.r.table(table)
+									}
+
+									if(args){
+										r_func = r_func[args[0]][verb](args[1])
+									}
+
+									r_func.run(instance.conn, response)
+
+
+
 									break
 
 								// case 'insert':
