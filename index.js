@@ -451,10 +451,11 @@ var AppCouchDBClient = new Class({
 
 							var merged = {};
 
-							let args = options.args || [];
+							let args = options.args || {};
 							let expr = options.expr || undefined;
 							let row = options.row || undefined;
 							let field = options.field || undefined;
+							let r_func = options.query || undefined
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -557,7 +558,6 @@ var AppCouchDBClient = new Class({
 							// //console.log(this.conn.info())
 							let table = (options.params && options.params.table) ? options.params.table : undefined
 							let database = (options.params && options.params.database) ? options.params.database : undefined
-							let r_func = undefined
 							let r = instance.r
 
 							switch (verb) {
@@ -681,21 +681,55 @@ var AppCouchDBClient = new Class({
 								* data
 								*/
 								case 'delete'://no args
-									// if(args)
-									// 	console.log(args)
-
-									if(database != undefined){
-										r_func = instance.r.db(database).table(table)
+									if(r_func){
+										r_func = r_func[verb](args)
 									}
 									else{
-										r_func = instance.r.table(table)
-									}
+										if(database != undefined){
+											r_func = instance.r.db(database).table(table)[verb](args)
+										}
+										else{
+											r_func = instance.r.table(table)[verb](args)
+										}
 
-									if(args){
-										r_func = args[0][verb](args[1])
+
 									}
 
 									r_func.run(instance.conn, response)
+									// if(args){
+									// 	// console.log(args)
+									// 	try{
+									// 		args[0].typeOf().run(instance.conn, function(type){
+									// 			let _func = args.shift()
+									// 			console.log('TYPE', type, _func, args)
+									// 			_func[verb](args[0]).run(instance.conn, response)
+                  //
+									// 		})
+									// 	}
+									// 	catch(e){
+									// 		if(database != undefined){
+									// 			r_func = instance.r.db(database).table(table)[verb](args)
+									// 		}
+									// 		else{
+									// 			r_func = instance.r.table(table)[verb](args)
+									// 		}
+									// 		r_func.run(instance.conn, response)
+									// 	}
+                  //
+									// }
+									// else{
+                  //
+                  //
+									// 	r_func.run(instance.conn, response)
+									// }
+
+
+                  //
+									// if(args){
+									// 	r_func = args[0][verb](args[1])
+									// }
+                  //
+
 
 
 
@@ -783,7 +817,12 @@ var AppCouchDBClient = new Class({
 								break
 
 								default:
-									args.push(response);
+									if(Array.isArray(args)){
+										args.push(response);
+									}
+									else{
+										args = [response]
+									}
 									instance.conn[verb].attempt(args, instance.conn)
 							}
 
