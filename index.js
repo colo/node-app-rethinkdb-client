@@ -680,6 +680,7 @@ var AppCouchDBClient = new Class({
 								/**
 								* data
 								*/
+								case 'changes':
 								case 'delete'://no args
 									if(r_func){
 										r_func = r_func[verb](args)
@@ -696,42 +697,6 @@ var AppCouchDBClient = new Class({
 									}
 
 									r_func.run(instance.conn, response)
-									// if(args){
-									// 	// console.log(args)
-									// 	try{
-									// 		args[0].typeOf().run(instance.conn, function(type){
-									// 			let _func = args.shift()
-									// 			console.log('TYPE', type, _func, args)
-									// 			_func[verb](args[0]).run(instance.conn, response)
-                  //
-									// 		})
-									// 	}
-									// 	catch(e){
-									// 		if(database != undefined){
-									// 			r_func = instance.r.db(database).table(table)[verb](args)
-									// 		}
-									// 		else{
-									// 			r_func = instance.r.table(table)[verb](args)
-									// 		}
-									// 		r_func.run(instance.conn, response)
-									// 	}
-                  //
-									// }
-									// else{
-                  //
-                  //
-									// 	r_func.run(instance.conn, response)
-									// }
-
-
-                  //
-									// if(args){
-									// 	r_func = args[0][verb](args[1])
-									// }
-                  //
-
-
-
 
 									break
 
