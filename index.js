@@ -28,6 +28,7 @@ var AppCouchDBClient = new Class({
 
   //request: null,
 	conn: undefined,
+	connected: false,
 
   api: {},
 
@@ -252,11 +253,13 @@ var AppCouchDBClient = new Class({
 	connect(err, conn){
 		debug_events('connect %o', err, conn)
 		if(err){
+			this.connected = false
 			this.fireEvent(this.ON_CONNECT_ERROR, { host: this.options.host, port: this.options.port, db: this.options.db, error: err });
 			throw err
 		}
 		else {
 			this.conn = conn
+			this.connected = true
 			this.fireEvent(this.ON_CONNECT, { host: this.options.host, port: this.options.port, db: this.options.db });
 		}
 	},
