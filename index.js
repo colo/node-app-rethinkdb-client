@@ -27,7 +27,7 @@ var AppCouchDBClient = new Class({
   ON_CONNECT_ERROR: 'onConnectError',
 
   //request: null,
-	conn: null,
+	conn: undefined,
 
   api: {},
 
