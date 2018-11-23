@@ -458,6 +458,7 @@ var AppCouchDBClient = new Class({
 							let expr = options.expr || undefined;
 							let row = options.row || undefined;
 							let field = options.field || undefined;
+							let orderBy = options.orderBy || undefined;
 							let r_func = options.query || undefined
 
 							let response = function(err, resp){
@@ -667,11 +668,21 @@ var AppCouchDBClient = new Class({
 									}
 
 									if(field != undefined){
-										console.log('FIELD:', field)
-										r_func.getField(field).run(instance.conn, response)
+										// console.log('FIELD:', field)
+										if(orderBy != undefined){
+											r_func.getField(field).orderBy(orderBy).run(instance.conn, response)
+										}
+										else{
+											r_func.getField(field).run(instance.conn, response)
+										}
 									}
 									else{
-										r_func.run(instance.conn, response)
+										if(orderBy != undefined){
+											r_func.orderBy(orderBy).run(instance.conn, response)
+										}
+										else{
+											r_func.run(instance.conn, response)
+										}
 									}
 
 
