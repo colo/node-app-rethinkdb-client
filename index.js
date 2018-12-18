@@ -460,6 +460,7 @@ var AppCouchDBClient = new Class({
 							let field = options.field || undefined;
 							let orderBy = options.orderBy || undefined;
 							let r_func = options.query || undefined
+							let chain = options.chain || undefined
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -667,6 +668,10 @@ var AppCouchDBClient = new Class({
 										r_func = instance.r.table(table)[verb](args[0], args[1], args[2])
 									}
 
+									/**
+									* @remove: 'chain' should be used instead
+									**/
+
 									if(field != undefined){
 										// console.log('FIELD:', field)
 										if(orderBy != undefined){
@@ -684,6 +689,24 @@ var AppCouchDBClient = new Class({
 											r_func.run(instance.conn, response)
 										}
 									}
+									/**
+									* @remove: 'chain' should be used instead
+									**/
+
+									if(chain){
+										if(!Array.isArray(chain))
+											chain = [chain]
+
+										Array.each(chain, function(f){
+											let _func = Object.keys(f)[0]
+											let _params = Object.values(f)[0]
+											r_func = r_func[_func](_params)
+										})
+									}
+
+									// else{
+									r_func.run(instance.conn, response)
+									// }
 
 
 									break
