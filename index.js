@@ -668,45 +668,49 @@ var AppCouchDBClient = new Class({
 										r_func = instance.r.table(table)[verb](args[0], args[1], args[2])
 									}
 
-									/**
-									* @remove: 'chain' should be used instead
-									**/
-
-									if(field != undefined){
-										// console.log('FIELD:', field)
-										if(orderBy != undefined){
-											r_func.getField(field).orderBy(orderBy).run(instance.conn, response)
-										}
-										else{
-											r_func.getField(field).run(instance.conn, response)
-										}
-									}
-									else{
-										if(orderBy != undefined){
-											r_func.orderBy(orderBy).run(instance.conn, response)
-										}
-										else{
-											r_func.run(instance.conn, response)
-										}
-									}
-									/**
-									* @remove: 'chain' should be used instead
-									**/
 
 									if(chain){
 										if(!Array.isArray(chain))
 											chain = [chain]
 
-										Array.each(chain, function(f){
+										Array.each(chain, function(f, index){
 											let _func = Object.keys(f)[0]
 											let _params = Object.values(f)[0]
 											r_func = r_func[_func](_params)
+
+											if(index == chain.length -1)
+												r_func.run(instance.conn, response)
+
 										})
 									}
+									else{
+										// r_func.run(instance.conn, response)
 
-									// else{
-									r_func.run(instance.conn, response)
-									// }
+										/**
+										* @remove: 'chain' should be used instead
+										**/
+										if(field != undefined){
+											// console.log('FIELD:', field)
+											if(orderBy != undefined){
+												r_func.getField(field).orderBy(orderBy).run(instance.conn, response)
+											}
+											else{
+												r_func.getField(field).run(instance.conn, response)
+											}
+										}
+										else{
+											if(orderBy != undefined){
+												r_func.orderBy(orderBy).run(instance.conn, response)
+											}
+											else{
+												r_func.run(instance.conn, response)
+											}
+										}
+										/**
+										* @remove: 'chain' should be used instead
+										**/
+									}
+
 
 
 									break
