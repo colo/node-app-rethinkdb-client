@@ -463,6 +463,7 @@ var AppCouchDBClient = new Class({
 							let chain = options.chain || undefined
 
 							let response = function(err, resp){
+								debug_internals('response %o %o', err, resp)
 								// if(err && resp == undefined){//some functions return no errs
 								// 	resp = err
 								// 	err = undefined
