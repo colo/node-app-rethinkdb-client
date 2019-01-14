@@ -19,7 +19,7 @@ var debug_events = require('debug')('app-rethinkdb-client:Events');
 var debug_internals = require('debug')('app-rethinkdb-client:Internals');
 
 
-var AppCouchDBClient = new Class({
+var AppRethinkDBClient = new Class({
   //Implements: [Options, Events],
   Extends: App,
 
@@ -455,6 +455,12 @@ var AppCouchDBClient = new Class({
 							var merged = {};
 
 							let args = options.args || {};
+							let index = options.index || undefined;
+							if(typeof index !== 'object'){
+								let val = index
+								index = {index: val}
+							}
+							
 							let expr = options.expr || undefined;
 							let row = options.row || undefined;
 							let field = options.field || undefined;
@@ -463,7 +469,6 @@ var AppCouchDBClient = new Class({
 							let chain = options.chain || undefined
 
 							let response = function(err, resp){
-								debug_internals('response %o %o', err, resp)
 								// if(err && resp == undefined){//some functions return no errs
 								// 	resp = err
 								// 	err = undefined
@@ -622,7 +627,6 @@ var AppCouchDBClient = new Class({
 								// 	break
 								case 'sync':// data method
 								case 'get': //data method
-								case 'getAll': //data method
 								case 'filter': //data method
 								case 'insert'://data method
 								case 'update'://data method
@@ -639,6 +643,26 @@ var AppCouchDBClient = new Class({
 										instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
 									}
 									break
+
+								case 'getAll': //data method
+								if(database != undefined){
+									if(index){
+										instance.r.db(database).table(table)[verb](r.args(args), index).run(instance.conn, response)
+									}
+									else{
+										instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
+									}
+
+								}
+								else{
+									if(index){
+										instance.r.table(table)[verb](r.args(args), index).run(instance.conn, response)
+									}
+									else{
+										instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+									}
+								}
+								break
 
 								case 'indexCreate':
 									if(database != undefined){
@@ -864,11 +888,11 @@ var AppCouchDBClient = new Class({
 
 	},
 	use: function(mount, app){
-		////console.log('---AppCouchDBClient----');
-		////console.log(instanceOf(app, AppCouchDBClient));
-		debug('use instanceOf(app, AppCouchDBClient) %o', instanceOf(app, AppCouchDBClient));
+		////console.log('---AppRethinkDBClient----');
+		////console.log(instanceOf(app, AppRethinkDBClient));
+		debug('use instanceOf(app, AppRethinkDBClient) %o', instanceOf(app, AppRethinkDBClient));
 
-		if(instanceOf(app, AppCouchDBClient))
+		if(instanceOf(app, AppRethinkDBClient))
 			this.parent(mount, app);
 
 
@@ -881,4 +905,4 @@ var AppCouchDBClient = new Class({
 
 
 
-module.exports = AppCouchDBClient
+module.exports = AppRethinkDBClient
