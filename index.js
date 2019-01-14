@@ -125,6 +125,7 @@ var AppRethinkDBClient = new Class({
 		max
 		contains
 		**/
+		'reduce',
 		'distinct',
 	],
 
@@ -460,7 +461,7 @@ var AppRethinkDBClient = new Class({
 								let val = index
 								index = {index: val}
 							}
-							
+
 							let expr = options.expr || undefined;
 							let row = options.row || undefined;
 							let field = options.field || undefined;
@@ -746,6 +747,7 @@ var AppRethinkDBClient = new Class({
 								/**
 								* data
 								*/
+								case 'reduce':
 								case 'changes':
 								case 'delete'://no args
 									if(r_func){
