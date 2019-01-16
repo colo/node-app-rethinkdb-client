@@ -252,13 +252,13 @@ var AppRethinkDBClient = new Class({
 		},
   },
 	connect(err, conn){
-		debug_events('connect %o', err, conn)
+		debug_events('connect %o %o', err, conn)
 		if(err){
 			this.connected = false
 			this.fireEvent(this.ON_CONNECT_ERROR, { host: this.options.host, port: this.options.port, db: this.options.db, error: err });
 			throw err
 		}
-		else {
+		else if(conn){
 			this.conn = conn
 			this.connected = true
 			this.fireEvent(this.ON_CONNECT, { host: this.options.host, port: this.options.port, db: this.options.db });
@@ -280,6 +280,8 @@ var AppRethinkDBClient = new Class({
 		connect_cb = (typeOf(connect_cb) ==  "function") ? connect_cb.bind(this) : this.connect.bind(this)
 
 		this.r = require('rethinkdb')
+
+		debug_internals('to connect %o ', Object.merge(opts, this.options.rethinkdb))
 
 		this.r.connect(Object.merge(opts, this.options.rethinkdb), connect_cb)
 
@@ -646,23 +648,24 @@ var AppRethinkDBClient = new Class({
 									break
 
 								case 'getAll': //data method
-								if(database != undefined){
-									if(index){
-										instance.r.db(database).table(table)[verb](r.args(args), index).run(instance.conn, response)
-									}
-									else{
-										instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
-									}
+									debug_internals('getAll %o', instance.conn)
+									if(database != undefined){
+										if(index){
+											instance.r.db(database).table(table)[verb](r.args(args), index).run(instance.conn, response)
+										}
+										else{
+											instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
+										}
 
-								}
-								else{
-									if(index){
-										instance.r.table(table)[verb](r.args(args), index).run(instance.conn, response)
 									}
 									else{
-										instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+										if(index){
+											instance.r.table(table)[verb](r.args(args), index).run(instance.conn, response)
+										}
+										else{
+											instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+										}
 									}
-								}
 								break
 
 								case 'indexCreate':
