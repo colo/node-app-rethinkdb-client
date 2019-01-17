@@ -74,6 +74,7 @@ var AppRethinkDBClient = new Class({
 		'delete',
 		'sync',
 
+		'table',
 		'get',
 		'getAll',
 		'between',
@@ -842,12 +843,23 @@ var AppRethinkDBClient = new Class({
 									// }
 
 									break
+
 								case 'distinct': //aggregation
 									if(database != undefined){
 										instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
 									}
 									else{
 										instance.r.table(table)[verb](args).run(instance.conn, response)
+									}
+
+								break
+
+								case 'table': //select
+									if(database != undefined){
+										instance.r.db(database)[verb](args).run(instance.conn, response)
+									}
+									else{
+										instance.r[verb](args).run(instance.conn, response)
 									}
 
 								break
@@ -859,7 +871,10 @@ var AppRethinkDBClient = new Class({
 									else{
 										args = [response]
 									}
+
 									instance.conn[verb].attempt(args, instance.conn)
+
+
 							}
 
 
