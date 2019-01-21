@@ -117,7 +117,6 @@ var AppRethinkDBClient = new Class({
 		*
 		group
 		ungroup
-		reduce
 		fold
 		count
 		sum
@@ -772,49 +771,37 @@ var AppRethinkDBClient = new Class({
 
 									break
 
-								// case 'insert':
-								// case 'update':
-								// case 'replace':
-								// 	// if(!args[1])
-								// 	// 	args[1] = {}
-                //
-								// 	if(database != undefined){
-								// 		instance.r.db(options.params.database).table(table)[verb](this.r.args(args)).run(instance.conn, response)
-								// 	}
-								// 	else{
-								// 		instance.r.table(table)[verb](this.r.args(args)).run(instance.conn, response)
-								// 	}
-								// 	break
+
 								/**
 								* data end
 								*/
 								case 'map':
 								case 'concatMap':
-									if(expr){
-										this.r.expr(expr).map(args).run(instance.conn, response)
+									if(r_func){
+										r_func = r_func[verb](args)
+										r_func.run(instance.conn, response)
 									}
-									else if(typeOf(args) == 'function'){
-										if(database != undefined){
-											instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
+									else{
+										/**
+										* @todo: old code, refactor
+										**/
+										if(expr){
+											this.r.expr(expr).map(args).run(instance.conn, response)
 										}
-										else{
-											instance.r.table(table)[verb](args).run(instance.conn, response)
-										}
+										else if(typeOf(args) == 'function'){
+											if(database != undefined){
+												instance.r.db(database).table(table)[verb](args).run(instance.conn, response)
+											}
+											else{
+												instance.r.table(table)[verb](args).run(instance.conn, response)
+											}
 
+										}
 									}
-									// else {
-									// 	// let _map = args.pop()
-									// 	// console.log(args)
-									// 	if(database != undefined){
-									// 		instance.r.db(options.params.database).table(table)[verb].apply(args).run(instance.conn, response)
-									// 	}
-									// 	else{
-									// 		instance.r.table(table)[verb].apply(args).run(instance.conn, response)
-									// 	}
-                  //
-									// }
 
-									break
+
+
+								break
 
 								case 'orderBy'://trasnformation
 									if(database != undefined){
