@@ -135,6 +135,7 @@ var AppRethinkDBClient = new Class({
 
   options: {
 
+		conn: undefined,
 		// scheme: 'http',
 		host: '127.0.0.1',
 		port: 28015,
@@ -261,29 +262,31 @@ var AppRethinkDBClient = new Class({
 		else if(conn){
 			this.conn = conn
 			this.connected = true
-			this.fireEvent(this.ON_CONNECT, { host: this.options.host, port: this.options.port, db: this.options.db });
+			this.fireEvent(this.ON_CONNECT, {host: this.options.host, port: this.options.port, db: this.options.db, conn: conn });
 		}
 	},
   initialize: function(options, connect_cb){
 
 		this.parent(options);//override default options
 
-
-		let opts = {
-			host: this.options.host,
-			port: this.options.port,
-			db: this.options.db
-		};
-
-
-		// this.conn = require('nano')(Object.merge(opts, this.options.rethinkdb));
 		connect_cb = (typeOf(connect_cb) ==  "function") ? connect_cb.bind(this) : this.connect.bind(this)
-
 		this.r = require('rethinkdb')
 
-		debug_internals('to connect %o ', Object.merge(opts, this.options.rethinkdb))
+		if(this.options.conn){
+			connect_cb(undefined, this.options.conn)
+		}
+		else{
+			let opts = {
+				host: this.options.host,
+				port: this.options.port,
+				db: this.options.db
+			};
 
-		this.r.connect(Object.merge(opts, this.options.rethinkdb), connect_cb)
+			debug_internals('to connect %o ', Object.merge(opts, this.options.rethinkdb))
+
+			this.r.connect(Object.merge(opts, this.options.rethinkdb), connect_cb)
+		}
+
 
 		//if(this.options.db)
 			//this.conn = this.conn.use(this.options.db);
