@@ -104,12 +104,12 @@ var AppRethinkDBClient = new Class({
 		'skip',
 		'limit',
 		'slice',
-		'nth',
 		'offsetsOf',
 		'isEmpty',
 		'union',
 		'sample',
 		**/
+		'nth',
 
 		/**
 		* aggregation
@@ -460,7 +460,7 @@ var AppRethinkDBClient = new Class({
 
 							var merged = {};
 
-							let args = options.args || {};
+							let args = (options.args !== undefined) ? options.args : {} //0, false && null should be valid args
 							let index = options.index || undefined;
 							if(typeof index !== 'object'){
 								let val = index
@@ -753,6 +753,7 @@ var AppRethinkDBClient = new Class({
 								/**
 								* data
 								*/
+								case 'nth':
 								case 'reduce':
 								case 'changes':
 								case 'delete'://no args
