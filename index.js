@@ -473,6 +473,7 @@ var AppRethinkDBClient = new Class({
 							let orderBy = options.orderBy || undefined;
 							let r_func = options.query || undefined
 							let chain = options.chain || undefined
+							let opts = options.opts || undefined
 
 							let response = function(err, resp){
 								// if(err && resp == undefined){//some functions return no errs
@@ -676,6 +677,9 @@ var AppRethinkDBClient = new Class({
 										if(row){
 											instance.r.db(database).table(table)[verb](args, row).run(instance.conn, response)
 										}
+										else if (opts) {
+											instance.r.db(database).table(table)[verb](args, r.args(opts)).run(instance.conn, response)
+										}
 										else{
 											instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
 										}
@@ -684,6 +688,10 @@ var AppRethinkDBClient = new Class({
 									else{
 										if(row){
 											instance.r.table(table)[verb](args, row).run(instance.conn, response)
+
+										}
+										else if (opts) {
+											instance.r.table(table)[verb](args, r.args(opts)).run(instance.conn, response)
 										}
 										else{
 											instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
