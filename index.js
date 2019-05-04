@@ -675,26 +675,40 @@ var AppRethinkDBClient = new Class({
 								case 'indexCreate':
 									if(database != undefined){
 										if(row){
-											instance.r.db(database).table(table)[verb](args, row).run(instance.conn, response)
-										}
-										else if (opts) {
-											instance.r.db(database).table(table)[verb](args, r.args(opts)).run(instance.conn, response)
+											if (opts) {
+												instance.r.db(database).table(table)[verb](args, row, opts).run(instance.conn, response)
+											}
+											else{
+												instance.r.db(database).table(table)[verb](args, row).run(instance.conn, response)
+											}
 										}
 										else{
-											instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
+											if (opts) {
+												instance.r.db(database).table(table)[verb](args, opts).run(instance.conn, response)
+											}
+											else{
+												instance.r.db(database).table(table)[verb](r.args(args)).run(instance.conn, response)
+											}
 										}
 
 									}
 									else{
 										if(row){
-											instance.r.table(table)[verb](args, row).run(instance.conn, response)
+											if (opts) {
+												instance.r.table(table)[verb](args, row, opts).run(instance.conn, response)
+											}
+											else{
+												instance.r.table(table)[verb](args, row).run(instance.conn, response)
+											}
 
 										}
-										else if (opts) {
-											instance.r.table(table)[verb](args, r.args(opts)).run(instance.conn, response)
-										}
 										else{
-											instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+											if (opts) {
+												instance.r.table(table)[verb](args, opts).run(instance.conn, response)
+											}
+											else{
+												instance.r.table(table)[verb](r.args(args)).run(instance.conn, response)
+											}
 										}
 									}
 									break
